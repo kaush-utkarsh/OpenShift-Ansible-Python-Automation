@@ -1,0 +1,42 @@
+.
+├── Makefile
+├── README.md
+├── ansible
+│   ├── ansible.cfg
+│   ├── inventory
+│   │   └── hosts.ini
+│   ├── playbooks
+│   │   ├── deploy.yml
+│   │   ├── hooks.yml
+│   │   └── rollback.yml
+│   └── roles
+│       ├── app_deploy
+│       │   ├── tasks
+│       │   │   ├── deploy.yml
+│       │   │   ├── post.yml
+│       │   │   └── pre.yml
+│       │   └── templates
+│       │       └── k8s
+│       └── test.txt
+├── ci
+│   └── github
+│       └── workflows
+│           └── cicd.yml
+├── cicd
+│   └── cli.py
+├── openshift
+│   ├── manifests
+│   │   ├── deployment.yaml.j2
+│   │   ├── namespace.yaml
+│   │   ├── rbac.yaml
+│   │   ├── route.yaml.j2
+│   │   ├── service.yaml.j2
+│   │   └── serviceaccount.yaml
+│   └── test.txt
+├── pyproject.toml
+├── requirements.txt
+├── structure.txt
+└── tests
+    └── test_cli.py
+
+16 directories, 24 files

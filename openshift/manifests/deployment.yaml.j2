@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ APP_NAME | default("hello-app") }}
+  namespace: {{ NAMESPACE | default("demo") }}
+  labels:
+    app: {{ APP_NAME | default("hello-app") }}
+spec:
+  replicas: {{ REPLICAS | default(2) }}
+  selector:
+    matchLabels:
+      app: {{ APP_NAME | default("hello-app") }}
+  template:
+    metadata:
+      labels:
+        app: {{ APP_NAME | default("hello-app") }}
+    spec:
+      serviceAccountName: deployer
+      containers:
+        - name: {{ APP_NAME | default("hello-app") }}
+          image: {{ IMAGE | default("nginx:stable") }}
+          ports:
+            - containerPort: {{ CONTAINER_PORT | default(8080) }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ CONTAINER_PORT | default(8080) }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ CONTAINER_PORT | default(8080) }}
+            initialDelaySeconds: 10
+            periodSeconds: 10

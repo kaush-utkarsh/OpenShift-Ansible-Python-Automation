@@ -1,0 +1,70 @@
+name: CI-CD
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  APP_NAME: hello-app
+  NAMESPACE: demo
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
+  IMAGE: ghcr.io/${{ github.repository_owner }}/hello-app:${{ github.sha }}
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Lint & Test
+        run: |
+          echo "Add linter here"
+          pytest -q
+
+      - name: Build container
+        run: |
+          echo "FROM nginx:stable" > Dockerfile
+          docker build -t $IMAGE .
+
+      - name: Login GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push image
+        run: docker push $IMAGE
+
+      - name: Render manifests
+        run: |
+          echo "APP_NAME=$APP_NAME" >> .env.ci
+          echo "NAMESPACE=$NAMESPACE" >> .env.ci
+          echo "IMAGE=$IMAGE" >> .env.ci
+          echo "REPLICAS=2" >> .env.ci
+          echo "CONTAINER_PORT=8080" >> .env.ci
+          cicd render --values .env.ci --outdir build/manifests
+
+      - name: Login to OpenShift
+        if: ${{ secrets.OS_API != '' && secrets.OS_TOKEN != '' }}
+        run: |
+          cicd oc-login --cluster-api "${{ secrets.OS_API }}" --token "${{ secrets.OS_TOKEN }}" --insecure-skip-tls-verify
+
+      - name: Create namespace if missing
+        run: |
+          oc get ns $NAMESPACE || oc create ns $NAMESPACE
+
+      - name: Deploy with Ansible
+        env:
+          APP_NAME: ${{ env.APP_NAME }}
+          NAMESPACE: ${{ env.NAMESPACE }}
+          IMAGE: ${{ env.IMAGE }}
+        run: |
+          cicd deploy --values .env.ci

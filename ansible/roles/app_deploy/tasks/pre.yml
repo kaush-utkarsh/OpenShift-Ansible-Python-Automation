@@ -1,0 +1,8 @@
+---
+- name: Pre-deploy | show variables for traceability
+  ansible.builtin.debug:
+    msg:
+      - "Namespace: {{ NAMESPACE | default('demo') }}"
+      - "App: {{ APP_NAME | default('hello-app') }}"
+      - "Image: {{ IMAGE | default('unset') }}"
+      - "Replicas: {{ REPLICAS | default(2) }}"

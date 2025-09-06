@@ -1,0 +1,19 @@
+---
+- name: Post-deploy | wait for rollout
+  ansible.builtin.shell: |
+    set -euo pipefail
+    kubectl -n "{{ NAMESPACE | default('demo') }}" rollout status deploy "{{ APP_NAME | default('hello-app') }}" --timeout=120s
+  register: rollout
+  changed_when: false
+
+- name: Post-deploy | show external route (if any)
+  ansible.builtin.shell: |
+    set -euo pipefail
+    if command -v oc >/dev/null 2>&1; then
+      oc -n "{{ NAMESPACE | default('demo') }}" get route "{{ APP_NAME | default('hello-app') }}" -o jsonpath='{.spec.host}{"\n"}' || true
+    fi
+  register: route
+  changed_when: false
+
+- debug:
+    msg: "Route host: {{ route.stdout | default('n/a') }}"

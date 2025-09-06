@@ -1,0 +1,28 @@
+---
+- name: Simple rollback to previous ReplicaSet
+  hosts: local
+  gather_facts: no
+  vars:
+    NAMESPACE: "{{ NAMESPACE | default('demo') }}"
+    APP_NAME: "{{ APP_NAME | default('hello-app') }}"
+
+  tasks:
+    - name: Find Deployment revision history
+      ansible.builtin.shell: |
+        set -euo pipefail
+        kubectl -n "{{ NAMESPACE }}" rollout history deployment "{{ APP_NAME }}"
+      register: hist
+      changed_when: false
+
+    - debug:
+        var: hist.stdout_lines
+
+    - name: Rollback to previous revision
+      ansible.builtin.shell: |
+        set -euo pipefail
+        kubectl -n "{{ NAMESPACE }}" rollout undo deployment "{{ APP_NAME }}"
+      register: undo
+      changed_when: "'rolled back' in undo.stdout"
+
+    - debug:
+        var: undo.stdout

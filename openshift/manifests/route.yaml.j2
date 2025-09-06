@@ -1,0 +1,13 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ APP_NAME | default("hello-app") }}
+  namespace: {{ NAMESPACE | default("demo") }}
+spec:
+  to:
+    kind: Service
+    name: {{ APP_NAME | default("hello-app") }}
+  port:
+    targetPort: http
+  tls:
+    termination: edge

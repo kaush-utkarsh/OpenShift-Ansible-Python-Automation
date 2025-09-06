@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ APP_NAME | default("hello-app") }}
+  namespace: {{ NAMESPACE | default("demo") }}
+spec:
+  selector:
+    app: {{ APP_NAME | default("hello-app") }}
+  ports:
+    - name: http
+      port: 80
+      targetPort: {{ CONTAINER_PORT | default(8080) }}

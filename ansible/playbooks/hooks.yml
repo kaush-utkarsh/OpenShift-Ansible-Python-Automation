@@ -1,0 +1,15 @@
+---
+- name: Run a hook on cluster (e.g., migration Job)
+  hosts: local
+  gather_facts: no
+
+  vars:
+    JOB_MANIFEST: "{{ JOB_MANIFEST | default('openshift/manifests/job-migrate.yaml') }}"
+    NAMESPACE: "{{ NAMESPACE | default('demo') }}"
+
+  tasks:
+    - name: Apply job
+      kubernetes.core.k8s:
+        state: present
+        namespace: "{{ NAMESPACE }}"
+        src: "{{ JOB_MANIFEST }}"
